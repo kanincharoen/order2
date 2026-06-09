@@ -1,0 +1,135 @@
+<div class="qr-container">
+  <header class="qr-header">
+    <h1>QR Code Management</h1>
+  </header>
+
+  <!-- Table Selector -->
+  <div class="table-selector">
+    <mat-form-field appearance="outline">
+      <mat-label>Select Occupied Table</mat-label>
+      <mat-select [(value)]="selectedTableId" (selectionChange)="onTableSelected()">
+        <mat-option *ngFor="let table of occupiedTables" [value]="table.id">
+          Table {{ table.tableNumber }} (Capacity: {{ table.seatingCapacity }})
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- No occupied tables message -->
+  <div *ngIf="occupiedTables.length === 0" class="empty-state">
+    <mat-icon>info</mat-icon>
+    <p>No occupied tables. Mark a table as "Occupied" first to generate QR codes.</p>
+  </div>
+
+  <!-- QR Code Display -->
+  <div *ngIf="selectedTableId && activeQrCode" class="qr-display-section">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>QR Code for Table {{ getSelectedTableNumber() }}</mat-card-title>
+        <mat-card-subtitle>Generated: {{ activeQrCode.generatedAt | date:'medium' }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="qr-image-container">
+          <img
+            [src]="qrImageUrl"
+            alt="QR Code for table ordering"
+            class="qr-image"
+            *ngIf="qrImageUrl"
+          />
+        </div>
+        <p class="qr-url"><strong>URL:</strong> {{ activeQrCode.orderUrl }}</p>
+        <p class="qr-status">
+          <mat-chip [color]="activeQrCode.isActive ? 'primary' : 'warn'" selected>
+            {{ activeQrCode.isActive ? 'Active' : 'Invalidated' }}
+          </mat-chip>
+        </p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="downloadQrImage()">
+          <mat-icon>download</mat-icon> Download PNG
+        </button>
+        <button mat-raised-button (click)="printQrCode()">
+          <mat-icon>print</mat-icon> Print
+        </button>
+        <button mat-raised-button color="accent" (click)="regenerateQrCode()">
+          <mat-icon>refresh</mat-icon> Regenerate
+        </button>
+        <button mat-raised-button color="warn" (click)="invalidateQrCode()">
+          <mat-icon>block</mat-icon> Invalidate
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Generate button when no active QR exists -->
+  <div *ngIf="selectedTableId && !activeQrCode" class="generate-section">
+    <mat-card>
+      <mat-card-content>
+        <p>No active QR code for this table.</p>
+        <button mat-raised-button color="primary" (click)="generateQrCode()">
+          <mat-icon>qr_code</mat-icon> Generate QR Code
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Print Status -->
+  <div *ngIf="printResult" class="print-status">
+    <mat-card [ngClass]="printResult.success ? 'print-success' : 'print-error'">
+      <mat-card-content>
+        <mat-icon>{{ printResult.success ? 'check_circle' : 'error' }}</mat-icon>
+        <span *ngIf="printResult.success">Print successful (attempt {{ printResult.attemptNumber }})</span>
+        <span *ngIf="!printResult.success">
+          Print failed: {{ printResult.errorMessage }}
+          <button
+            mat-button
+            color="primary"
+            *ngIf="printResult.retriesRemaining > 0"
+            (click)="printQrCode()"
+          >
+            Retry ({{ printResult.retriesRemaining }} remaining)
+          </button>
+        </span>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Printer Configuration -->
+  <div class="printer-config-section">
+    <h2>Printer Configuration</h2>
+    <mat-card>
+      <mat-card-content>
+        <form (ngSubmit)="savePrinterConfig()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Printer Name</mat-label>
+            <input matInput [(ngModel)]="printerConfig.printerName" name="printerName" maxlength="100" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Connection Type</mat-label>
+            <mat-select [(ngModel)]="printerConfig.connectionType" name="connectionType">
+              <mat-option value="usb">USB</mat-option>
+              <mat-option value="network">Network</mat-option>
+              <mat-option value="bluetooth">Bluetooth</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width" *ngIf="printerConfig.connectionType === 'network'">
+            <mat-label>Network Address</mat-label>
+            <input matInput [(ngModel)]="printerConfig.networkAddress" name="networkAddress" placeholder="192.168.1.100" />
+          </mat-form-field>
+
+          <div class="config-actions">
+            <button mat-raised-button color="primary" type="submit">Save Configuration</button>
+            <button mat-button type="button" (click)="testPrinterConnection()">Test Connection</button>
+          </div>
+        </form>
+
+        <div *ngIf="printerTestResult" class="test-result" [ngClass]="printerTestResult.success ? 'test-success' : 'test-error'">
+          <mat-icon>{{ printerTestResult.success ? 'check_circle' : 'cancel' }}</mat-icon>
+          {{ printerTestResult.message }}
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,51 @@
+<div class="history-container">
+  <header><h1>Order History</h1></header>
+
+  <div class="filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Table Number</mat-label>
+      <input matInput type="number" [(ngModel)]="tableNumber" placeholder="Filter by table" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Start Date</mat-label>
+      <input matInput type="date" [(ngModel)]="startDate" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>End Date</mat-label>
+      <input matInput type="date" [(ngModel)]="endDate" />
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="search()">Search</button>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <div *ngIf="result" class="results">
+    <p class="total-sum"><strong>Total Sum: ${{ totalSum.toFixed(2) }}</strong></p>
+
+    <mat-card *ngFor="let order of result.data" class="order-card">
+      <mat-card-header>
+        <mat-card-title>Table {{ order.tableNumber }} - {{ order.status }}</mat-card-title>
+        <mat-card-subtitle>{{ order.createdAt | date:'medium' }} &middot; ${{ order.totalPrice }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <ul>
+          <li *ngFor="let item of order.items">
+            {{ item.menuItemName }} &times; {{ item.quantity }} - ${{ item.unitPrice }}
+          </li>
+        </ul>
+      </mat-card-content>
+    </mat-card>
+
+    <div *ngIf="result.data.length === 0" class="no-results">
+      No orders match the specified search criteria.
+    </div>
+
+    <mat-paginator
+      *ngIf="result.total > 0"
+      [length]="result.total"
+      [pageSize]="50"
+      [pageIndex]="currentPage - 1"
+      (page)="onPageChange($event)"
+    ></mat-paginator>
+  </div>
+</div>

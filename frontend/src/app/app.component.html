@@ -1,0 +1,28 @@
+<div class="app-shell" *ngIf="isLoggedIn">
+  <mat-toolbar color="primary">
+    <span>Restaurant Order Management</span>
+    <span class="spacer"></span>
+    <nav>
+      <a mat-button routerLink="/tables" routerLinkActive="active-link">Tables</a>
+      <a mat-button routerLink="/menu" routerLinkActive="active-link">Menu</a>
+      <a mat-button routerLink="/orders" routerLinkActive="active-link">Orders</a>
+      <a mat-button routerLink="/history" routerLinkActive="active-link">History</a>
+      <a mat-button routerLink="/qr" routerLinkActive="active-link">QR Codes</a>
+    </nav>
+    <span class="spacer"></span>
+    <span class="connection-indicator" [ngClass]="isConnected ? 'connected' : 'disconnected'"
+      [attr.title]="isConnected ? 'Real-time connected' : 'Connection lost — reconnecting...'"
+    >
+      <mat-icon>{{ isConnected ? 'wifi' : 'wifi_off' }}</mat-icon>
+    </span>
+    <button mat-button (click)="logout()">
+      <mat-icon>logout</mat-icon> Logout
+    </button>
+  </mat-toolbar>
+
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
+
+<router-outlet *ngIf="!isLoggedIn"></router-outlet>

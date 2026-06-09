@@ -1,0 +1,41 @@
+<div class="customer-container" *ngIf="!invalidToken">
+  <header>
+    <h1>Menu - Table {{ tableNumber }}</h1>
+  </header>
+
+  <div *ngFor="let category of categoryNames" class="category-section">
+    <h2>{{ category }}</h2>
+    <mat-card *ngFor="let item of menuData.categories[category]" class="menu-item-card">
+      <mat-card-header>
+        <mat-card-title>{{ item.name }}</mat-card-title>
+        <mat-card-subtitle>${{ item.price }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>{{ item.description }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="addToCart(item)">
+          Add to Order
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <div *ngIf="cart.length > 0" class="cart-section">
+    <h2>Your Order</h2>
+    <div *ngFor="let item of cart; let i = index" class="cart-item">
+      <span>{{ item.name }} &times; {{ item.quantity }} = ${{ (item.price * item.quantity).toFixed(2) }}</span>
+      <input [(ngModel)]="item.specialInstructions" placeholder="Special instructions" maxlength="200" />
+      <button mat-button color="warn" (click)="removeFromCart(i)">Remove</button>
+    </div>
+    <p><strong>Total: ${{ cartTotal.toFixed(2) }}</strong></p>
+    <button mat-raised-button color="accent" (click)="placeOrder()" [disabled]="isSubmitting">
+      Place Order
+    </button>
+  </div>
+</div>
+
+<div *ngIf="invalidToken" class="invalid-token">
+  <h1>QR Code No Longer Valid</h1>
+  <p>This QR code has expired or been invalidated. Please ask your server for a new one.</p>
+</div>
